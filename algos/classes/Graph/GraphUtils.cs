@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace classes.Graph
 {
@@ -71,6 +72,62 @@ namespace classes.Graph
                     {
                         return result;
                     }
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Calculates shorted reach weight in undirected graph from start node to others
+        /// </summary>
+        /// <param name="n">Overall nodes count</param>
+        /// <param name="edges">Edges weights data (w>0). edges[i] is edges for i-th node, key - dest node, value - wight of edge</param>
+        /// <param name="start">Start node</param>
+        /// <returns>Array of reaches weights (result[i] is weight of reach from start to i-th node). 
+        /// If node is unreachanble - value == -1
+        /// </returns>
+        public static int[] DijkstraReachWeight(int n, Dictionary<int, int>[] edges, int start)
+        {
+            var visitedNodes = new HashSet<int>();
+
+            var result = new int[n];
+            for (int i = 0; i < n; i++)
+            {
+                result[i] = -1;
+            }
+            result[start] = 0;
+
+            var nodesToReach = new SortedSet<Tuple<int, int>>();
+            nodesToReach.Add(new Tuple<int, int>(0, start));
+
+            while (nodesToReach.Count > 0)
+            {
+                var currNodeToReach = nodesToReach.Min;
+                nodesToReach.Remove(currNodeToReach);
+                var currNode = currNodeToReach.Item2;
+                if (visitedNodes.Contains(currNode))
+                {
+                    continue;
+                }
+                visitedNodes.Add(currNode);
+                foreach (var kvp in edges[currNode])
+                {
+                    var currEdge = kvp;
+                    var currEdgeDestNode = currEdge.Key;
+                    var currEdgeW = currEdge.Value;
+
+                    if (visitedNodes.Contains(currEdgeDestNode))
+                    {
+                        continue;
+                    }
+
+                    if (result[currEdgeDestNode] == -1 || result[currEdgeDestNode] > result[currNode] + currEdgeW)
+                    {
+                        result[currEdgeDestNode] = result[currNode] + currEdgeW;
+                    }
+
+                    nodesToReach.Add(new Tuple<int, int>(result[currEdgeDestNode], currEdgeDestNode));
                 }
             }
 

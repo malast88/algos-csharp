@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using classes.Graph;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace classes.Tests
 {
@@ -33,6 +34,34 @@ namespace classes.Tests
             #endregion
             #region Assert
             Assert.AreEqual(3, mst.Select(index => edges[index]).Sum(e => e.Weight));
+            #endregion
+        }
+
+        [TestMethod]
+        public void GraphUtilsShouldCalculateDijkstraReachWeight()
+        {
+            #region Arrange
+            var n = 4;
+            Dictionary<int, int>[] edges = new Dictionary<int, int>[4];
+            edges[0] = new Dictionary<int, int>();
+            edges[0].Add(1, 24);
+            edges[0].Add(3, 20);
+            edges[0].Add(2, 3);
+            edges[1] = new Dictionary<int, int>();
+            edges[1].Add(0, 24);
+            edges[2] = new Dictionary<int, int>();
+            edges[2].Add(0, 3);
+            edges[2].Add(3, 12);
+            edges[3] = new Dictionary<int, int>();
+            edges[3].Add(2, 12);
+            #endregion
+            #region Act
+            var reach = GraphUtils.DijkstraReachWeight(n, edges, 0);
+            #endregion
+            #region Assert
+            Assert.AreEqual(24, reach[1]);
+            Assert.AreEqual(3, reach[2]);
+            Assert.AreEqual(15, reach[3]);
             #endregion
         }
     }
