@@ -133,5 +133,69 @@ namespace classes.Graph
 
             return result;
         }
+
+        /// <summary>
+        /// Dijkstra algorithm for cases when it is impossible to provide only one edge for two edges
+        /// </summary>
+        /// <param name="n">Overall nodes count</param>
+        /// <param name="edges">Edges weight data (w>0). edges[i] is edges for i-th node. Item1 - dest node, Item2 - edge weight</param>
+        /// <param name="start">Start node</param>
+        /// <returns></returns>
+        public static int[] DijkstraReachWeight(int n, List<Tuple<int, int>>[] edges, int start)
+        {
+            var visitedNodes = new HashSet<int>();
+
+            var result = new int[n];
+            for (int i = 0; i < n; i++)
+            {
+                result[i] = -1;
+            }
+            result[start] = 0;
+
+            var nodesToReach = new HashSet<int>();
+            nodesToReach.Add(start);
+
+            while (nodesToReach.Count > 0)
+            {
+                var minW = int.MaxValue;
+                var minNode = -1;
+                foreach (var nodeCandidate in nodesToReach)
+                {
+                    if (result[nodeCandidate] < minW)
+                    {
+                        minW = result[nodeCandidate];
+                        minNode = nodeCandidate;
+                    }
+                }
+
+                var currNode = minNode;
+                nodesToReach.Remove(currNode);
+                visitedNodes.Add(currNode);
+                foreach (var tpl in edges[currNode])
+                {
+                    var currEdge = tpl;
+                    var currEdgeDestNode = currEdge.Item1;
+                    var currEdgeW = currEdge.Item2;
+
+                    if (visitedNodes.Contains(currEdgeDestNode))
+                    {
+                        continue;
+                    }
+
+                    if (result[currEdgeDestNode] == -1 || result[currEdgeDestNode] > result[currNode] + currEdgeW)
+                    {
+                        result[currEdgeDestNode] = result[currNode] + currEdgeW;
+                    }
+
+                    if (!nodesToReach.Contains(currEdgeDestNode))
+                    {
+                        nodesToReach.Add(currEdgeDestNode);
+                    }
+                }
+            }
+
+            return result;
+        }
+
     }
 }
