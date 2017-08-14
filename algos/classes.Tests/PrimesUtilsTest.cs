@@ -55,5 +55,18 @@ namespace classes.Tests
             Assert.AreEqual(11, allDividors.Count);
             #endregion
         }
+
+        [TestMethod]
+        public void PrimesUtildShouldCheckIfNumberIsPrime()
+        {
+            var pu = new PrimesUtils(10);
+            Assert.AreEqual(true, pu.IsPrime(41));
+            Assert.AreEqual(false, pu.IsPrime(42));
+            Assert.AreEqual(true, pu.IsPrime(953));
+            Assert.AreEqual(true, pu.IsPrime(997651));
+            Assert.AreEqual(true, pu.IsPrime(999715711));
+            Assert.AreEqual(true, pu.IsPrime(999973156643));
+            Assert.AreEqual(false, pu.IsPrime(1122004669633));
+        }
     }
 }

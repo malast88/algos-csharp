@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace classes.Primes
 {
@@ -17,6 +19,96 @@ namespace classes.Primes
         /// </summary>
         HashSet<int> _primesHashSet;
 
+        int _maxN;
+
+        // Implementation on inner loop of Miller-Rabin test
+        static bool MillerRabinWitness(long n, long s, long d, long a)
+        {
+            long x = (long)BigInteger.ModPow(a, d, n);
+            if (x == 1 || x == n - 1)
+            {
+                return true;
+            }
+
+            while (s > 0)
+            {
+                x = (long)BigInteger.ModPow(x, 2, n);
+                if (x == 1)
+                {
+                    return false;
+                }
+                if (x == n - 1)
+                {
+                    return true;
+                }
+                s--;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Deterministic version of Miller-Rabin test
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        static bool IsPrimeMillerRabinDeterministic(long n)
+        {
+            if (((!((n & 1) == 1)) && n != 2) || (n < 2) || (n % 3 == 0 && n != 3))
+                return false;
+            if (n <= 3)
+                return true;
+
+            long d = n - 1;
+            long s = 0;
+            while (d % 2 == 0)
+            {
+                d /= 2;
+                s++;
+            }
+
+            if (n < 2047)
+            {
+                return MillerRabinWitness(n, s, d, 2);
+            }
+            if (n < 1373653)
+            {
+                return MillerRabinWitness(n, s, d, 2) && MillerRabinWitness(n, s, d, 3);
+            }
+            if (n < 9080191)
+            {
+                return MillerRabinWitness(n, s, d, 31) && MillerRabinWitness(n, s, d, 73);
+            }
+            if (n < 25326001)
+            {
+                return MillerRabinWitness(n, s, d, 2) && MillerRabinWitness(n, s, d, 3) && MillerRabinWitness(n, s, d, 5);
+            }
+            if (n < 3215031751)
+            {
+                return MillerRabinWitness(n, s, d, 2) && MillerRabinWitness(n, s, d, 3) && MillerRabinWitness(n, s, d, 5) && MillerRabinWitness(n, s, d, 7);
+            }
+            if (n < 4759123141)
+            {
+                return MillerRabinWitness(n, s, d, 2) && MillerRabinWitness(n, s, d, 7) && MillerRabinWitness(n, s, d, 61);
+            }
+            if (n < 1122004669633)
+            {
+                return MillerRabinWitness(n, s, d, 2) && MillerRabinWitness(n, s, d, 13) && MillerRabinWitness(n, s, d, 23) && MillerRabinWitness(n, s, d, 1662803);
+            }
+            if (n < 2152302898747)
+            {
+                return MillerRabinWitness(n, s, d, 2) && MillerRabinWitness(n, s, d, 3) && MillerRabinWitness(n, s, d, 5) && MillerRabinWitness(n, s, d, 7) && MillerRabinWitness(n, s, d, 11);
+            }
+            if (n < 3474749660383)
+            {
+                return MillerRabinWitness(n, s, d, 2) && MillerRabinWitness(n, s, d, 3) && MillerRabinWitness(n, s, d, 5) && MillerRabinWitness(n, s, d, 7) && MillerRabinWitness(n, s, d, 11) && MillerRabinWitness(n, s, d, 13);
+            }
+            if (n < 341550071728321)
+            {
+                return MillerRabinWitness(n, s, d, 2) && MillerRabinWitness(n, s, d, 3) && MillerRabinWitness(n, s, d, 5) && MillerRabinWitness(n, s, d, 7) && MillerRabinWitness(n, s, d, 11) && MillerRabinWitness(n, s, d, 13) && MillerRabinWitness(n, s, d, 17);
+            }
+            throw new NotImplementedException("cannot perform deterministic check for n >= 341550071728321");
+        }
+
         /// <summary>
         /// Constructor which initializes util class with maximum poossible
         /// value of prime number. At one calculates all primes under maxN
@@ -24,6 +116,7 @@ namespace classes.Primes
         /// <param name="maxN">Maximum possible value of prime number</param>
         public PrimesUtils(int maxN)
         {
+            _maxN = maxN;
             _primes = new List<int>();
             _primesHashSet = new HashSet<int>();
 
@@ -53,9 +146,17 @@ namespace classes.Primes
             return _primes;
         }
 
-        public bool IsPrime(int n)
+        public bool IsPrime(long n)
         {
-            return _primesHashSet.Contains(n);
+            if (n <= int.MaxValue)
+            {
+                int nInt = (int)n;
+                if (nInt < _maxN)
+                {
+                    return _primesHashSet.Contains(nInt);
+                }
+            }
+            return IsPrimeMillerRabinDeterministic(n);
         }
 
         /// <summary>
@@ -114,7 +215,7 @@ namespace classes.Primes
             foreach (var currDividor in primeDividors.Keys)
             {
                 var countCurrDividor = primeDividors[currDividor];
-                for (int i=0;i<countCurrDividor;i++)
+                for (int i = 0; i < countCurrDividor; i++)
                 {
                     result.Add(currDividor);
                 }
@@ -138,11 +239,11 @@ namespace classes.Primes
                 var currMultiplier = 1;
                 var countMultipliers = prime.Value;
                 var prevDividorsCount = result.Count;
-                for (int i=1;i<=countMultipliers;i++)
+                for (int i = 1; i <= countMultipliers; i++)
                 {
                     currMultiplier *= prime.Key;
                     result.Add(currMultiplier);
-                    for (int j=0;j<prevDividorsCount;j++)
+                    for (int j = 0; j < prevDividorsCount; j++)
                     {
                         result.Add(result[j] * currMultiplier);
                     }
