@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Digits\Numeral.cs" />
     <Compile Include="DisjointSets\DisjointSets.cs" />
     <Compile Include="Graph\GraphEdge.cs" />
     <Compile Include="Graph\GraphEdgeWeightComparer.cs" />
