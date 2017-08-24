@@ -8,6 +8,22 @@ namespace classes.Tests
     public class PrimesUtilsTest
     {
         [TestMethod]
+        public void PrimesUtilsShouldGetAllPrimes()
+        {
+            #region Arrange
+            var pu = new PrimesUtils(1000000);
+            #endregion
+            #region Act
+            var primes = pu.GetSievePrimes();
+            #endregion
+            #region Assert
+            Assert.AreEqual(78498, primes.Count);
+            Assert.AreEqual(2, primes[0]);
+            Assert.AreEqual(999983, primes[78497]);
+            #endregion
+        }
+
+        [TestMethod]
         public void PrimesUtilsShouldCalculatePrimeDividors()
         {
             #region Arrange
@@ -59,7 +75,7 @@ namespace classes.Tests
         [TestMethod]
         public void PrimesUtildShouldCheckIfNumberIsPrime()
         {
-            var pu = new PrimesUtils(10);
+            var pu = new PrimesUtils();
             Assert.AreEqual(true, pu.IsPrime(41));
             Assert.AreEqual(false, pu.IsPrime(42));
             Assert.AreEqual(true, pu.IsPrime(953));

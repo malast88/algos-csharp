@@ -11,15 +11,33 @@ namespace classes.Primes
     public class PrimesUtils
     {
         /// <summary>
-        /// Ordered list of primes
+        /// Ordered list of primes.
+        /// In constructor is filled only by numbers below sqrt(_maxN)
+        /// due to performance improvements
         /// </summary>
         List<int> _primes;
-        /// <summary>
-        /// Hash set of primes - allows quickly check if number is prime
-        /// </summary>
-        HashSet<int> _primesHashSet;
 
+        /// <summary>
+        /// Indicates whether _primes contains all number possible from _sieve
+        /// When creating _sieve, only numbers below sqrt(_maxN) are put
+        /// into _primes list
+        /// </summary>
+        bool _primesListIsFull;
+
+        /// <summary>
+        /// Maximum number in _primes list
+        /// </summary>
+        int _primesMax;
+
+        /// <summary>
+        /// Upper boundary for sieve
+        /// </summary>
         int _maxN;
+
+        /// <summary>
+        /// Eratosthenes sieve (stores only odd numbers)
+        /// </summary>
+        BitArray _sieve; 
 
         static long ModularExp(int a, int b, int n)
         {
@@ -139,52 +157,84 @@ namespace classes.Primes
             throw new NotImplementedException("cannot perform deterministic check for n >= 341550071728321");
         }
 
+        public PrimesUtils() : this(2) { }
+
         /// <summary>
-        /// Constructor which initializes util class with maximum poossible
-        /// value of prime number. At one calculates all primes under maxN
+        /// Constructor allows to specify up boundary for sieve
+        /// (for numbers in sieve primarity checking based on sieve data
+        /// without further calculations)
         /// </summary>
-        /// <param name="maxN">Maximum possible value of prime number</param>
+        /// <param name="maxN">Up boundary for sieve</param>
         public PrimesUtils(int maxN)
         {
             _maxN = maxN;
             _primes = new List<int>();
-            _primesHashSet = new HashSet<int>();
+            _sieve = new BitArray(maxN/2 + 1);
 
-            // uses stupid Sieve of Eratosthenes
-            // TODO - consider caching primes under 1000 or even 100000
-            var eratosfen = new BitArray(maxN + 1);
-            for (int i = 2; i <= maxN; i++)
+            _primesListIsFull = false;
+            int upBoundary = (int)Math.Floor(Math.Sqrt(maxN)) + 1;
+            _primes.Add(2);
+            _primesMax = 2;
+            for (int i = 3; i <= upBoundary; i+=2)
             {
-                if (eratosfen[i])
+                if (_sieve[i/2])
                 {
                     continue;
                 }
                 _primes.Add(i);
-                _primesHashSet.Add(i);
+                _primesMax = i;
 
-                var curr = i;
+                var curr = i * i;
                 while (curr <= maxN)
                 {
-                    eratosfen[curr] = true;
+                    if (curr % 2 == 1)
+                    {
+                        _sieve[curr / 2] = true;
+                    }
                     curr += i;
                 }
             }
         }
 
-        public List<int> GetPrimes()
+        /// <summary>
+        /// Get complete list of primes from sieve
+        /// </summary>
+        /// <returns></returns>
+        public List<int> GetSievePrimes()
         {
+            if (!_primesListIsFull)
+            {
+                if (_primesMax == 2)
+                {
+                    _primes.Add(3);
+                    _primesMax = 3;
+                }
+                for (int i=_primesMax+2;i<=_maxN;i+=2)
+                {
+                    if (!_sieve[i/2])
+                    {
+                        _primes.Add(i);
+                    }
+                }
+                _primesListIsFull = true;
+            }
             return _primes;
         }
 
         public bool IsPrime(long n)
         {
-            if (n <= int.MaxValue)
+            if (n == 2)
+            {
+                return true;
+            }
+            if (n > 2 && n % 2 == 0)
+            {
+                return false;
+            }
+            if (n <= _maxN)
             {
                 int nInt = (int)n;
-                if (nInt < _maxN)
-                {
-                    return _primesHashSet.Contains(nInt);
-                }
+                return !_sieve[nInt / 2];
             }
             return IsPrimeMillerRabinDeterministic(n);
         }
@@ -202,7 +252,7 @@ namespace classes.Primes
             while (currRemain > 1)
             {
                 var currPrime = 0;
-                if (_primesHashSet.Contains(currRemain))
+                if (IsPrime(currRemain))
                 {
                     currPrime = currRemain;
                 }
