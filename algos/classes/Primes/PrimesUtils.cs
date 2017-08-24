@@ -21,10 +21,32 @@ namespace classes.Primes
 
         int _maxN;
 
+        static long ModularExp(int a, int b, int n)
+        {
+            long d = 1;
+            int k = 0;
+            while ((b >> k) > 0) k++;
+
+            for (int i = k - 1; i >= 0; i--)
+            {
+                d = d * d % n;
+                if (((b >> i) & 1) > 0) d = d * a % n;
+            }
+
+            return d;
+        }
         // Implementation on inner loop of Miller-Rabin test
         static bool MillerRabinWitness(long n, long s, long d, long a)
         {
-            long x = (long)BigInteger.ModPow(a, d, n);
+            long x = 0;
+            if (a <= int.MaxValue && d <= int.MaxValue && n <= int.MaxValue)
+            {
+                x = ModularExp((int)a, (int)d, (int)n);
+            }
+            else
+            {
+                x = (long)BigInteger.ModPow(a, d, n);
+            }
             if (x == 1 || x == n - 1)
             {
                 return true;
@@ -32,7 +54,15 @@ namespace classes.Primes
 
             while (s > 0)
             {
-                x = (long)BigInteger.ModPow(x, 2, n);
+                if (x <= int.MaxValue && n <= int.MaxValue)
+                {
+                    x = ModularExp((int)x, 2, (int)n);
+                }
+                else
+                {
+                    x = (long)BigInteger.ModPow(x, 2, n);
+                }
+
                 if (x == 1)
                 {
                     return false;
