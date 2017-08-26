@@ -74,7 +74,16 @@ namespace classes.Digits
 
         public static List<byte> GetDigits(ulong n)
         {
-            var result = new List<byte>();
+            int capacity = 8;
+            if (n >= 1000000000000000)
+            {
+                capacity = 32;
+            }
+            else if (n >= 1000000000)
+            {
+                capacity = 16;
+            }
+            var result = new List<byte>(capacity);
             while (n > 0)
             {
                 result.Add((byte)(n % 10));
